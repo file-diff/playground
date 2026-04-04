@@ -25,6 +25,7 @@ let score;
 let bestScore = Number.parseInt(localStorage.getItem("snake-best-score") || "0", 10);
 let gameLoop;
 let gameOver;
+let photoObjectUrl;
 
 bestScoreElement.textContent = String(bestScore);
 
@@ -95,10 +96,22 @@ function endGame() {
 }
 
 function takePhoto() {
-  photoPreviewElement.src = canvas.toDataURL("image/png");
-  photoPreviewElement.alt = `Snake game photo at score ${score}`;
-  photoPreviewElement.hidden = false;
-  photoStatusElement.textContent = "Latest game photo:";
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      photoStatusElement.textContent = "Unable to take a photo right now.";
+      return;
+    }
+
+    if (photoObjectUrl) {
+      URL.revokeObjectURL(photoObjectUrl);
+    }
+
+    photoObjectUrl = URL.createObjectURL(blob);
+    photoPreviewElement.src = photoObjectUrl;
+    photoPreviewElement.alt = `Snake game photo at score ${score}`;
+    photoPreviewElement.hidden = false;
+    photoStatusElement.textContent = "Latest game photo:";
+  }, "image/png");
 }
 
 function update() {
