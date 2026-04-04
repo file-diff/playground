@@ -3,6 +3,9 @@ const context = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
 const bestScoreElement = document.getElementById("best-score");
 const restartButton = document.getElementById("restart");
+const capturePhotoButton = document.getElementById("capture-photo");
+const photoStatusElement = document.getElementById("photo-status");
+const photoPreviewElement = document.getElementById("photo-preview");
 
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
@@ -22,6 +25,7 @@ let score;
 let bestScore = Number.parseInt(localStorage.getItem("snake-best-score") || "0", 10);
 let gameLoop;
 let gameOver;
+let photoObjectUrl;
 
 bestScoreElement.textContent = String(bestScore);
 
@@ -91,6 +95,25 @@ function endGame() {
   draw();
 }
 
+function takePhoto() {
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      photoStatusElement.textContent = "Unable to take a photo right now.";
+      return;
+    }
+
+    if (photoObjectUrl) {
+      URL.revokeObjectURL(photoObjectUrl);
+    }
+
+    photoObjectUrl = URL.createObjectURL(blob);
+    photoPreviewElement.src = photoObjectUrl;
+    photoPreviewElement.alt = `Snake game photo at score ${score}`;
+    photoPreviewElement.hidden = false;
+    photoStatusElement.textContent = "Latest game photo:";
+  }, "image/png");
+}
+
 function update() {
   if (gameOver) {
     return;
@@ -145,5 +168,11 @@ document.addEventListener("keydown", (event) => {
 });
 
 restartButton.addEventListener("click", resetGame);
+capturePhotoButton.addEventListener("click", takePhoto);
+window.addEventListener("beforeunload", () => {
+  if (photoObjectUrl) {
+    URL.revokeObjectURL(photoObjectUrl);
+  }
+});
 
 resetGame();

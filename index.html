@@ -21,7 +21,20 @@
         aria-label="Snake game board"
         role="img"
       ></canvas>
-      <button id="restart" type="button">Restart</button>
+      <div class="actions" role="group" aria-label="Game actions">
+        <button id="restart" type="button">Restart</button>
+        <button id="capture-photo" class="secondary-action" type="button">Take Photo</button>
+      </div>
+      <section class="photo-panel" aria-live="polite">
+        <p id="photo-status" class="photo-status">No photo taken yet.</p>
+        <img
+          id="photo-preview"
+          alt="Preview of the latest captured Snake game photo"
+          width="400"
+          height="400"
+          hidden
+        />
+      </section>
     </main>
     <script src="./script.js"></script>
   </body>
