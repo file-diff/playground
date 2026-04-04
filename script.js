@@ -20,7 +20,6 @@ const directionOptions = Object.values(directions);
 
 let snake = [];
 let direction;
-let nextDirection;
 let manualDirection;
 let food;
 let score;
@@ -55,7 +54,6 @@ function resetGame() {
     { x: 8, y: 10 },
   ];
   direction = { x: 1, y: 0 };
-  nextDirection = direction;
   manualDirection = null;
   food = randomFoodPosition();
   score = 0;
@@ -68,6 +66,7 @@ function resetGame() {
 
 function isReverseDirection(requestedDirection, currentDirection) {
   return (
+    (requestedDirection.x !== 0 || requestedDirection.y !== 0) &&
     requestedDirection.x === -currentDirection.x &&
     requestedDirection.y === -currentDirection.y
   );
@@ -188,9 +187,9 @@ function update() {
     return;
   }
 
-  nextDirection = manualDirection || chooseAiDirection();
+  const selectedDirection = manualDirection || chooseAiDirection();
   manualDirection = null;
-  direction = nextDirection;
+  direction = selectedDirection;
   const head = {
     x: snake[0].x + direction.x,
     y: snake[0].y + direction.y,
