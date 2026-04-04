@@ -169,5 +169,10 @@ document.addEventListener("keydown", (event) => {
 
 restartButton.addEventListener("click", resetGame);
 capturePhotoButton.addEventListener("click", takePhoto);
+window.addEventListener("beforeunload", () => {
+  if (photoObjectUrl) {
+    URL.revokeObjectURL(photoObjectUrl);
+  }
+});
 
 resetGame();
