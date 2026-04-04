@@ -95,8 +95,8 @@ function endGame() {
 }
 
 function takePhoto() {
-  draw();
   photoPreviewElement.src = canvas.toDataURL("image/png");
+  photoPreviewElement.alt = `Snake game photo at score ${score}`;
   photoPreviewElement.hidden = false;
   photoStatusElement.textContent = "Latest game photo:";
 }
