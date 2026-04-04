@@ -16,6 +16,7 @@ const directions = {
   ArrowLeft: { x: -1, y: 0 },
   ArrowRight: { x: 1, y: 0 },
 };
+const directionOptions = Object.values(directions);
 
 let snake = [];
 let direction;
@@ -106,7 +107,7 @@ function chooseAiDirection() {
     candidateDirections.push(directions.ArrowUp);
   }
 
-  candidateDirections.push(direction, ...Object.values(directions));
+  candidateDirections.push(direction, ...directionOptions);
 
   const seenDirections = new Set();
 
