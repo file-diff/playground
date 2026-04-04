@@ -1,0 +1,46 @@
+name: Capture Snake game photo
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  capture-photo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright@1.59.1
+          npx playwright install --with-deps chromium
+
+      - name: Exercise game and capture photo
+        env:
+          GAME_URL: http://127.0.0.1:8000
+          GAME_PHOTO_PATH: artifacts/snake-game-photo.png
+        run: |
+          python3 -m http.server 8000 --directory . >/tmp/snake-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          node ./scripts/capture-game-photo.mjs
+
+      - name: Upload game photo artifact
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: snake-game-photo
+          path: artifacts/snake-game-photo.png
