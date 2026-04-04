@@ -20,6 +20,7 @@ const directions = {
 let snake = [];
 let direction;
 let nextDirection;
+let manualDirection;
 let food;
 let score;
 let bestScore = Number.parseInt(localStorage.getItem("snake-best-score") || "0", 10);
@@ -54,6 +55,7 @@ function resetGame() {
   ];
   direction = { x: 1, y: 0 };
   nextDirection = direction;
+  manualDirection = null;
   food = randomFoodPosition();
   score = 0;
   gameOver = false;
@@ -61,6 +63,72 @@ function resetGame() {
   restartButton.textContent = "Restart";
   draw();
   gameLoop = window.setInterval(update, tickDelay);
+}
+
+function isReverseDirection(requestedDirection, currentDirection) {
+  return (
+    requestedDirection.x === -currentDirection.x &&
+    requestedDirection.y === -currentDirection.y
+  );
+}
+
+function isSafeDirection(requestedDirection) {
+  const nextHead = {
+    x: snake[0].x + requestedDirection.x,
+    y: snake[0].y + requestedDirection.y,
+  };
+  const hitsWall =
+    nextHead.x < 0 || nextHead.y < 0 || nextHead.x >= tileCount || nextHead.y >= tileCount;
+
+  if (hitsWall) {
+    return false;
+  }
+
+  const eatsFood = nextHead.x === food.x && nextHead.y === food.y;
+  const body = eatsFood ? snake : snake.slice(0, -1);
+
+  return !body.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
+}
+
+function chooseAiDirection() {
+  const head = snake[0];
+  const candidateDirections = [];
+
+  if (food.x > head.x) {
+    candidateDirections.push(directions.ArrowRight);
+  } else if (food.x < head.x) {
+    candidateDirections.push(directions.ArrowLeft);
+  }
+
+  if (food.y > head.y) {
+    candidateDirections.push(directions.ArrowDown);
+  } else if (food.y < head.y) {
+    candidateDirections.push(directions.ArrowUp);
+  }
+
+  candidateDirections.push(direction, ...Object.values(directions));
+
+  const seenDirections = new Set();
+
+  for (const candidateDirection of candidateDirections) {
+    const directionKey = `${candidateDirection.x},${candidateDirection.y}`;
+
+    if (seenDirections.has(directionKey)) {
+      continue;
+    }
+
+    seenDirections.add(directionKey);
+
+    if (isReverseDirection(candidateDirection, direction)) {
+      continue;
+    }
+
+    if (isSafeDirection(candidateDirection)) {
+      return candidateDirection;
+    }
+  }
+
+  return direction;
 }
 
 function drawCell(x, y, color) {
@@ -119,6 +187,8 @@ function update() {
     return;
   }
 
+  nextDirection = manualDirection || chooseAiDirection();
+  manualDirection = null;
   direction = nextDirection;
   const head = {
     x: snake[0].x + direction.x,
@@ -160,10 +230,10 @@ document.addEventListener("keydown", (event) => {
   }
 
   const reversing =
-    requestedDirection.x === -direction.x && requestedDirection.y === -direction.y;
+    isReverseDirection(requestedDirection, direction);
 
   if (!reversing) {
-    nextDirection = requestedDirection;
+    manualDirection = requestedDirection;
   }
 });
 
