@@ -16,11 +16,11 @@ const directions = {
   ArrowLeft: { x: -1, y: 0 },
   ArrowRight: { x: 1, y: 0 },
 };
-const directionOptions = Object.values(directions);
+const allDirections = Object.values(directions);
 
 let snake = [];
 let direction;
-let manualDirection;
+let manualDirection = null;
 let food;
 let score;
 let bestScore = Number.parseInt(localStorage.getItem("snake-best-score") || "0", 10);
@@ -105,7 +105,7 @@ function chooseAiDirection() {
     candidateDirections.push(directions.ArrowUp);
   }
 
-  candidateDirections.push(direction, ...directionOptions);
+  candidateDirections.push(direction, ...allDirections);
 
   const seenDirections = new Set();
 
