@@ -3,6 +3,9 @@ const context = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
 const bestScoreElement = document.getElementById("best-score");
 const restartButton = document.getElementById("restart");
+const capturePhotoButton = document.getElementById("capture-photo");
+const photoStatusElement = document.getElementById("photo-status");
+const photoPreviewElement = document.getElementById("photo-preview");
 
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
@@ -91,6 +94,13 @@ function endGame() {
   draw();
 }
 
+function takePhoto() {
+  draw();
+  photoPreviewElement.src = canvas.toDataURL("image/png");
+  photoPreviewElement.hidden = false;
+  photoStatusElement.textContent = "Latest game photo:";
+}
+
 function update() {
   if (gameOver) {
     return;
@@ -145,5 +155,6 @@ document.addEventListener("keydown", (event) => {
 });
 
 restartButton.addEventListener("click", resetGame);
+capturePhotoButton.addEventListener("click", takePhoto);
 
 resetGame();
