@@ -66,7 +66,6 @@ function resetGame() {
 
 function isReverseDirection(requestedDirection, currentDirection) {
   return (
-    (requestedDirection.x !== 0 || requestedDirection.y !== 0) &&
     requestedDirection.x === -currentDirection.x &&
     requestedDirection.y === -currentDirection.y
   );
@@ -85,9 +84,9 @@ function isSafeDirection(requestedDirection) {
   }
 
   const eatsFood = nextHead.x === food.x && nextHead.y === food.y;
-  const body = eatsFood ? snake : snake.slice(0, -1);
+  const bodyToCheck = eatsFood ? snake : snake.slice(0, -1);
 
-  return !body.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
+  return !bodyToCheck.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
 }
 
 function chooseAiDirection() {
