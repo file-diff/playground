@@ -74,10 +74,8 @@ function isSafeDirection(requestedDirection) {
     x: snake[0].x + requestedDirection.x,
     y: snake[0].y + requestedDirection.y,
   };
-  const hitsWall =
-    nextHead.x < 0 || nextHead.y < 0 || nextHead.x >= tileCount || nextHead.y >= tileCount;
 
-  if (hitsWall) {
+  if (isOutOfBounds(nextHead)) {
     return false;
   }
 
@@ -85,6 +83,10 @@ function isSafeDirection(requestedDirection) {
   const bodyToCheck = eatsFood ? snake : snake.slice(0, -1);
 
   return !bodyToCheck.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
+}
+
+function isOutOfBounds(position) {
+  return position.x < 0 || position.y < 0 || position.x >= tileCount || position.y >= tileCount;
 }
 
 function chooseAiDirection() {
@@ -190,8 +192,7 @@ function update() {
     y: snake[0].y + direction.y,
   };
 
-  const hitWall =
-    head.x < 0 || head.y < 0 || head.x >= tileCount || head.y >= tileCount;
+  const hitWall = isOutOfBounds(head);
   const hitSelf = snake.some((segment) => segment.x === head.x && segment.y === head.y);
 
   if (hitWall || hitSelf) {
