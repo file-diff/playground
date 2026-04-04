@@ -55,6 +55,7 @@ canvas {
 }
 
 button {
+  min-height: 44px;
   padding: 10px 16px;
   border: 0;
   border-radius: 999px;
@@ -75,7 +76,7 @@ button:hover {
 }
 
 .secondary-action:hover {
-  background: #f9fafb;
+  background: #d1d5db;
 }
 
 .photo-panel {
