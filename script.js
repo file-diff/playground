@@ -20,7 +20,6 @@ const allDirections = Object.values(directions);
 
 let snake = [];
 let direction;
-let manualDirection = null;
 let food;
 let score;
 let bestScore = Number.parseInt(localStorage.getItem("snake-best-score") || "0", 10);
@@ -54,7 +53,6 @@ function resetGame() {
     { x: 8, y: 10 },
   ];
   direction = { x: 1, y: 0 };
-  manualDirection = null;
   food = randomFoodPosition();
   score = 0;
   gameOver = false;
@@ -186,9 +184,7 @@ function update() {
     return;
   }
 
-  const selectedDirection = manualDirection || chooseAiDirection();
-  manualDirection = null;
-  direction = selectedDirection;
+  direction = chooseAiDirection();
   const head = {
     x: snake[0].x + direction.x,
     y: snake[0].y + direction.y,
@@ -220,21 +216,6 @@ function update() {
 
   draw();
 }
-
-document.addEventListener("keydown", (event) => {
-  const requestedDirection = directions[event.key];
-
-  if (!requestedDirection) {
-    return;
-  }
-
-  const reversing =
-    isReverseDirection(requestedDirection, direction);
-
-  if (!reversing) {
-    manualDirection = requestedDirection;
-  }
-});
 
 restartButton.addEventListener("click", resetGame);
 capturePhotoButton.addEventListener("click", takePhoto);
