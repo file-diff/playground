@@ -14,7 +14,7 @@ const directions = {
   ArrowRight: { x: 1, y: 0 },
 };
 
-let snake;
+let snake = [];
 let direction;
 let nextDirection;
 let food;
@@ -39,6 +39,10 @@ function randomFoodPosition() {
 }
 
 function resetGame() {
+  if (gameLoop) {
+    window.clearInterval(gameLoop);
+  }
+
   snake = [
     { x: 10, y: 10 },
     { x: 9, y: 10 },
@@ -52,6 +56,7 @@ function resetGame() {
   scoreElement.textContent = "0";
   restartButton.textContent = "Restart";
   draw();
+  gameLoop = window.setInterval(update, tickDelay);
 }
 
 function drawCell(x, y, color) {
@@ -142,4 +147,3 @@ document.addEventListener("keydown", (event) => {
 restartButton.addEventListener("click", resetGame);
 
 resetGame();
-gameLoop = window.setInterval(update, tickDelay);
