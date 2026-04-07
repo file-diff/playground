@@ -122,7 +122,7 @@ function getAiNextDirection(aiIndex, nextAiHeads) {
   return safeMoves[0]?.candidate || aiDirection;
 }
 
-function getAiSnakeCount() {
+function normalizeAndGetAiSnakeCount() {
   const parsedValue = Number.parseInt(snakeCountInput.value, 10);
   const boundedValue = Number.isNaN(parsedValue)
     ? 1
@@ -160,7 +160,7 @@ function resetGame() {
     { x: 9, y: 10 },
     { x: 8, y: 10 },
   ];
-  aiSnakes = createAiSnakes(getAiSnakeCount());
+  aiSnakes = createAiSnakes(normalizeAndGetAiSnakeCount());
   direction = { x: 1, y: 0 };
   nextDirection = direction;
   aiDirections = aiSnakes.map(() => ({ x: 1, y: 0 }));
