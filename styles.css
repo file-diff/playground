@@ -38,6 +38,26 @@ h1 {
   font-size: 1rem;
 }
 
+.settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.settings input {
+  width: 72px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 2px solid #4b5563;
+  border-radius: 10px;
+  font: inherit;
+  text-align: center;
+  color: #f9fafb;
+  background: #111827;
+}
+
 .actions {
   display: flex;
   gap: 12px;
