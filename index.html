@@ -9,10 +9,14 @@
   <body>
     <main class="game-shell">
       <h1>Snake</h1>
-      <p class="instructions">Use the arrow keys to move. Eat food, avoid walls, yourself, and the blue AI worm.</p>
+      <p class="instructions">Use the arrow keys to move. Eat food, avoid walls, yourself, and the blue AI snakes.</p>
       <section class="hud" aria-label="Scoreboard">
         <span>Score: <strong id="score">0</strong></span>
         <span>Best: <strong id="best-score">0</strong></span>
+      </section>
+      <section class="settings" aria-label="Game settings">
+        <label for="ai-snake-count">AI snakes</label>
+        <input id="ai-snake-count" type="number" min="1" max="18" value="1" />
       </section>
       <canvas
         id="game"

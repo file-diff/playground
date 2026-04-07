@@ -1,6 +1,6 @@
 # playground
 
-Simple browser Snake game. Open `index.html` in a browser to play.
+Simple browser Snake game with a configurable number of AI snakes. Open `index.html` in a browser to play.
 
 Play online: https://file-diff.github.io/playground/
 

@@ -2,6 +2,7 @@ const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
 const bestScoreElement = document.getElementById("best-score");
+const snakeCountInput = document.getElementById("ai-snake-count");
 const restartButton = document.getElementById("restart");
 const capturePhotoButton = document.getElementById("capture-photo");
 const photoStatusElement = document.getElementById("photo-status");
@@ -16,18 +17,25 @@ const directions = {
   ArrowLeft: { x: -1, y: 0 },
   ArrowRight: { x: 1, y: 0 },
 };
+const aiSnakeColumns = 3;
+const aiSnakeStartX = 4;
+const aiSnakeColumnSpacing = 6;
+const aiSnakeStartY = 2;
+const aiSnakeRowSpacing = 3;
 
 let snake = [];
-let aiSnake = [];
+let aiSnakes = [];
 let direction;
 let nextDirection;
-let aiDirection;
+let aiDirections = [];
 let food;
 let score;
 let bestScore = Number.parseInt(localStorage.getItem("snake-best-score") || "0", 10);
 let gameLoop;
 let gameOver;
 let photoObjectUrl;
+
+const maxAiSnakes = Number.parseInt(snakeCountInput.max, 10);
 
 bestScoreElement.textContent = String(bestScore);
 
@@ -45,7 +53,9 @@ function randomFoodPosition() {
     };
   } while (
     snake.some((segment) => segment.x === position.x && segment.y === position.y) ||
-    aiSnake.some((segment) => segment.x === position.x && segment.y === position.y)
+    aiSnakes.some((aiSnake) =>
+      aiSnake.some((segment) => segment.x === position.x && segment.y === position.y)
+    )
   );
 
   return position;
@@ -55,13 +65,17 @@ function willEat(head) {
   return head.x === food.x && head.y === food.y;
 }
 
-function getProjectedOccupiedCells(nextSnakeHead, nextAiHead) {
+function getProjectedOccupiedCells(nextSnakeHead, nextAiHeads) {
   const occupiedCells = new Set();
   const nextSnakeBody = willEat(nextSnakeHead) ? snake : snake.slice(0, -1);
-  const nextAiBody = willEat(nextAiHead) ? aiSnake : aiSnake.slice(0, -1);
 
   nextSnakeBody.forEach((segment) => occupiedCells.add(cellKey(segment)));
-  nextAiBody.forEach((segment) => occupiedCells.add(cellKey(segment)));
+  aiSnakes.forEach((aiSnake, index) => {
+    const nextAiHead = nextAiHeads[index];
+    const aiWillEat = nextAiHead ? willEat(nextAiHead) : false;
+    const nextAiBody = aiWillEat ? aiSnake : aiSnake.slice(0, -1);
+    nextAiBody.forEach((segment) => occupiedCells.add(cellKey(segment)));
+  });
 
   return occupiedCells;
 }
@@ -73,7 +87,9 @@ function isValidMove(head, occupiedCells) {
   return !hitWall && !occupiedCells.has(cellKey(head));
 }
 
-function getAiNextDirection() {
+function getAiNextDirection(aiIndex, nextAiHeads) {
+  const aiSnake = aiSnakes[aiIndex];
+  const aiDirection = aiDirections[aiIndex];
   const options = Object.values(directions).filter(
     (candidate) => candidate.x !== -aiDirection.x || candidate.y !== -aiDirection.y
   );
@@ -87,14 +103,16 @@ function getAiNextDirection() {
         x: snake[0].x + nextDirection.x,
         y: snake[0].y + nextDirection.y,
       };
-      const occupiedCells = getProjectedOccupiedCells(projectedSnakeHead, candidateHead);
+      const candidateAiHeads = nextAiHeads.concat(candidateHead);
+      const occupiedCells = getProjectedOccupiedCells(projectedSnakeHead, candidateAiHeads);
 
       return {
         candidate,
         candidateHead,
         isSafe:
           isValidMove(candidateHead, occupiedCells) &&
-          cellKey(candidateHead) !== cellKey(projectedSnakeHead),
+          cellKey(candidateHead) !== cellKey(projectedSnakeHead) &&
+          !nextAiHeads.some((head) => cellKey(head) === cellKey(candidateHead)),
         distance: Math.abs(candidateHead.x - food.x) + Math.abs(candidateHead.y - food.y),
       };
     })
@@ -102,6 +120,34 @@ function getAiNextDirection() {
     .sort((left, right) => left.distance - right.distance);
 
   return safeMoves[0]?.candidate || aiDirection;
+}
+
+function normalizeAndGetAiSnakeCount() {
+  const parsedValue = Number.parseInt(snakeCountInput.value, 10);
+  const boundedValue = Number.isNaN(parsedValue)
+    ? 1
+    : Math.min(Math.max(parsedValue, 1), maxAiSnakes);
+  snakeCountInput.value = String(boundedValue);
+  return boundedValue;
+}
+
+function createAiSnakes(count) {
+  const snakes = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const column = index % aiSnakeColumns;
+    const row = Math.floor(index / aiSnakeColumns);
+    const headX = aiSnakeStartX + column * aiSnakeColumnSpacing;
+    const headY = aiSnakeStartY + row * aiSnakeRowSpacing;
+
+    snakes.push([
+      { x: headX, y: headY },
+      { x: headX - 1, y: headY },
+      { x: headX - 2, y: headY },
+    ]);
+  }
+
+  return snakes;
 }
 
 function resetGame() {
@@ -114,14 +160,10 @@ function resetGame() {
     { x: 9, y: 10 },
     { x: 8, y: 10 },
   ];
-  aiSnake = [
-    { x: 10, y: 6 },
-    { x: 9, y: 6 },
-    { x: 8, y: 6 },
-  ];
+  aiSnakes = createAiSnakes(normalizeAndGetAiSnakeCount());
   direction = { x: 1, y: 0 };
   nextDirection = direction;
-  aiDirection = { x: 1, y: 0 };
+  aiDirections = aiSnakes.map(() => ({ x: 1, y: 0 }));
   food = randomFoodPosition();
   score = 0;
   gameOver = false;
@@ -144,8 +186,10 @@ function draw() {
   snake.forEach((segment, index) => {
     drawCell(segment.x, segment.y, index === 0 ? "#4ade80" : "#22c55e");
   });
-  aiSnake.forEach((segment, index) => {
-    drawCell(segment.x, segment.y, index === 0 ? "#60a5fa" : "#2563eb");
+  aiSnakes.forEach((aiSnake) => {
+    aiSnake.forEach((segment, index) => {
+      drawCell(segment.x, segment.y, index === 0 ? "#60a5fa" : "#2563eb");
+    });
   });
 
   if (gameOver) {
@@ -191,24 +235,44 @@ function update() {
   }
 
   direction = nextDirection;
-  aiDirection = getAiNextDirection();
   const head = {
     x: snake[0].x + direction.x,
     y: snake[0].y + direction.y,
   };
-  const aiHead = {
-    x: aiSnake[0].x + aiDirection.x,
-    y: aiSnake[0].y + aiDirection.y,
-  };
-  const occupiedCells = getProjectedOccupiedCells(head, aiHead);
-  const sameCell = cellKey(head) === cellKey(aiHead);
-  const swappedHeads =
-    cellKey(head) === cellKey(aiSnake[0]) && cellKey(aiHead) === cellKey(snake[0]);
+  const nextAiDirections = [];
+  const nextAiHeads = [];
+
+  aiSnakes.forEach((aiSnake, index) => {
+    const aiDirection = getAiNextDirection(index, nextAiHeads);
+    nextAiDirections.push(aiDirection);
+    nextAiHeads.push({
+      x: aiSnake[0].x + aiDirection.x,
+      y: aiSnake[0].y + aiDirection.y,
+    });
+  });
+  const occupiedCells = getProjectedOccupiedCells(head, nextAiHeads);
+  const nextHeadKeys = [head, ...nextAiHeads].map(cellKey);
+  const hasHeadCollision = new Set(nextHeadKeys).size !== nextHeadKeys.length;
+  const previousHeads = [snake[0], ...aiSnakes.map((aiSnake) => aiSnake[0])];
+  const nextHeads = [head, ...nextAiHeads];
+  let swappedHeads = false;
+
+  for (let leftIndex = 0; leftIndex < previousHeads.length && !swappedHeads; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < previousHeads.length; rightIndex += 1) {
+      if (
+        cellKey(nextHeads[leftIndex]) === cellKey(previousHeads[rightIndex]) &&
+        cellKey(nextHeads[rightIndex]) === cellKey(previousHeads[leftIndex])
+      ) {
+        swappedHeads = true;
+        break;
+      }
+    }
+  }
 
   if (
     !isValidMove(head, occupiedCells) ||
-    !isValidMove(aiHead, occupiedCells) ||
-    sameCell ||
+    nextAiHeads.some((aiHead) => !isValidMove(aiHead, occupiedCells)) ||
+    hasHeadCollision ||
     swappedHeads
   ) {
     endGame();
@@ -216,9 +280,15 @@ function update() {
   }
 
   snake.unshift(head);
-  aiSnake.unshift(aiHead);
+  aiSnakes.forEach((aiSnake, index) => {
+    aiSnake.unshift(nextAiHeads[index]);
+  });
+  aiDirections = nextAiDirections;
 
-  if (willEat(head)) {
+  const playerAte = willEat(head);
+  const aiAte = nextAiHeads.map((aiHead) => willEat(aiHead));
+
+  if (playerAte) {
     score += 1;
     scoreElement.textContent = String(score);
     if (score > bestScore) {
@@ -226,17 +296,18 @@ function update() {
       localStorage.setItem("snake-best-score", String(bestScore));
       bestScoreElement.textContent = String(bestScore);
     }
-    food = randomFoodPosition();
   } else {
     snake.pop();
   }
 
-  if (willEat(aiHead)) {
-    if (!willEat(head)) {
-      food = randomFoodPosition();
+  aiSnakes.forEach((aiSnake, index) => {
+    if (!aiAte[index]) {
+      aiSnake.pop();
     }
-  } else {
-    aiSnake.pop();
+  });
+
+  if (playerAte || aiAte.some(Boolean)) {
+    food = randomFoodPosition();
   }
 
   draw();
@@ -259,6 +330,7 @@ document.addEventListener("keydown", (event) => {
 
 restartButton.addEventListener("click", resetGame);
 capturePhotoButton.addEventListener("click", takePhoto);
+snakeCountInput.addEventListener("change", resetGame);
 window.addEventListener("beforeunload", () => {
   if (photoObjectUrl) {
     URL.revokeObjectURL(photoObjectUrl);
