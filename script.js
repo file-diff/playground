@@ -17,6 +17,11 @@ const directions = {
   ArrowLeft: { x: -1, y: 0 },
   ArrowRight: { x: 1, y: 0 },
 };
+const aiSnakeColumns = 3;
+const aiSnakeStartX = 4;
+const aiSnakeColumnSpacing = 6;
+const aiSnakeStartY = 2;
+const aiSnakeRowSpacing = 3;
 
 let snake = [];
 let aiSnakes = [];
@@ -128,13 +133,12 @@ function getAiSnakeCount() {
 
 function createAiSnakes(count) {
   const snakes = [];
-  const columns = 3;
 
   for (let index = 0; index < count; index += 1) {
-    const column = index % columns;
-    const row = Math.floor(index / columns);
-    const headX = 4 + column * 6;
-    const headY = 2 + row * 3;
+    const column = index % aiSnakeColumns;
+    const row = Math.floor(index / aiSnakeColumns);
+    const headX = aiSnakeStartX + column * aiSnakeColumnSpacing;
+    const headY = aiSnakeStartY + row * aiSnakeRowSpacing;
 
     snakes.push([
       { x: headX, y: headY },
