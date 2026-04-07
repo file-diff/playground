@@ -67,7 +67,8 @@ function getProjectedOccupiedCells(nextSnakeHead, nextAiHeads) {
   nextSnakeBody.forEach((segment) => occupiedCells.add(cellKey(segment)));
   aiSnakes.forEach((aiSnake, index) => {
     const nextAiHead = nextAiHeads[index];
-    const nextAiBody = nextAiHead && willEat(nextAiHead) ? aiSnake : aiSnake.slice(0, -1);
+    const aiWillEat = nextAiHead ? willEat(nextAiHead) : false;
+    const nextAiBody = aiWillEat ? aiSnake : aiSnake.slice(0, -1);
     nextAiBody.forEach((segment) => occupiedCells.add(cellKey(segment)));
   });
 
@@ -291,7 +292,6 @@ function update() {
       localStorage.setItem("snake-best-score", String(bestScore));
       bestScoreElement.textContent = String(bestScore);
     }
-    food = randomFoodPosition();
   } else {
     snake.pop();
   }
@@ -302,7 +302,7 @@ function update() {
     }
   });
 
-  if (!playerAte && aiAte.some(Boolean)) {
+  if (playerAte || aiAte.some(Boolean)) {
     food = randomFoodPosition();
   }
 
